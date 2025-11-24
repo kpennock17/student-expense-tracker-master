@@ -79,6 +79,26 @@ export default function ExpenseScreen() {
     loadExpenses(); 
   };
 
+const { overallTotal, categoryTotals } = useMemo(() => {
+    const total = expenses.reduce((acc, expense) => acc + expense.amount, 0);
+    const categoryMap = expenses.reduce((map, expense) => {
+        const cat = expense.category;
+        map[cat] = (map[cat] || 0) + expense.amount;
+        return map;
+    }, {});
+
+    const categoryList = Object.keys(categoryMap)
+        .map(category => ({
+            category,
+            total: categoryMap[category],
+        }))
+        .sort((a, b) => b.total - a.total);
+
+    return {
+        overallTotal: total,
+        categoryTotals: categoryList,
+    };
+}, [expenses]);
 
   const deleteExpense = async (id) => {
     await db.runAsync('DELETE FROM expenses WHERE id = ?;', [id]);
