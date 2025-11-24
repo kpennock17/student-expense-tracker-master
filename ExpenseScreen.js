@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import {
   SafeAreaView,
   View,
@@ -11,6 +11,20 @@ import {
 } from 'react-native';
 import { useSQLiteContext } from 'expo-sqlite';
 
+const getWeekStart = () => {
+  const date = new Date();
+  const day = date.getDay(); 
+  const diff = date.getDate() - day + (day === 0 ? -6 : 1); 
+  const start = new Date(date.setDate(diff));
+  return start.toISOString().split('T')[0];
+};
+
+const getMonthStart = () => {
+  const date = new Date();
+  date.setDate(1);
+  return date.toISOString().split('T')[0];
+};
+
 export default function ExpenseScreen() {
   const db = useSQLiteContext();
 
@@ -19,12 +33,30 @@ export default function ExpenseScreen() {
   const [category, setCategory] = useState('');
   const [note, setNote] = useState('');
 
-  const loadExpenses = async () => {
-    const rows = await db.getAllAsync(
-      'SELECT * FROM expenses ORDER BY id DESC;'
-    );
+  const [filter, setFilter] = useState('All');
+
+  const [isEditing, setIsEditing] = useState(false);
+  const [editId, setEditId] = useState(null);
+
+  const loadExpenses = async (currentFilter = filter) => {
+    let whereClause = '';
+    const now = new Date().toISOString().split('T')[0];
+
+    if (currentFilter === 'This Week') {
+      const weekStart = getWeekStart();
+      whereClause = `WHERE date >= '${weekStart}' AND date <= '${now}'`;
+    } else if (currentFilter === 'This Month') {
+      const monthStart = getMonthStart();
+      whereClause = `WHERE date >= '${monthStart}' AND date <= '${now}'`;
+    }
+
+    const query = `SELECT * FROM expenses ${whereClause} ORDER BY date DESC, id DESC;`;
+    const rows = await db.getAllAsync(query);
+
     setExpenses(rows);
+    setFilter(currentFilter);
   };
+
   const addExpense = async () => {
     const amountNumber = parseFloat(amount);
 
