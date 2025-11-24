@@ -1,5 +1,3 @@
-// App.js
-import React from 'react';
 import { SQLiteProvider } from 'expo-sqlite';
 import ExpenseScreen from './ExpenseScreen';
 

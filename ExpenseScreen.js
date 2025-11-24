@@ -78,10 +78,11 @@ export default function ExpenseScreen() {
     async function setup() {
       await db.execAsync(`
         CREATE TABLE IF NOT EXISTS expenses (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          id INTEGER PRIMARY PRIMARY KEY AUTOINCREMENT,
           amount REAL NOT NULL,
           category TEXT NOT NULL,
-          note TEXT
+          note TEXT,
+          date TEXT NOT NULL -- New date column
         );
       `);
 
