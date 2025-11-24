@@ -59,30 +59,24 @@ export default function ExpenseScreen() {
 
   const addExpense = async () => {
     const amountNumber = parseFloat(amount);
-
-    if (isNaN(amountNumber) || amountNumber <= 0) {
-      // Basic validation: ignore invalid or non-positive amounts
+    if (isNaN(amountNumber) || amountNumber <= 0 || !category.trim()) {
       return;
     }
 
     const trimmedCategory = category.trim();
     const trimmedNote = note.trim();
-
-    if (!trimmedCategory) {
-      // Category is required
-      return;
-    }
+    const today = new Date().toISOString().split('T')[0];
 
     await db.runAsync(
-      'INSERT INTO expenses (amount, category, note) VALUES (?, ?, ?);',
-      [amountNumber, trimmedCategory, trimmedNote || null]
+      'INSERT INTO expenses (amount, category, note, date) VALUES (?, ?, ?, ?);',
+      [amountNumber, trimmedCategory, trimmedNote || null, today]
     );
 
     setAmount('');
     setCategory('');
     setNote('');
 
-    loadExpenses();
+    loadExpenses(); 
   };
 
 
